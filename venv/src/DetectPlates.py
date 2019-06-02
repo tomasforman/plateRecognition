@@ -15,7 +15,7 @@ PLATE_WIDTH_PADDING_FACTOR = 1.3
 PLATE_HEIGHT_PADDING_FACTOR = 1.5
 SCALAR_WHITE = (255.0, 255.0, 255.0)
 SCALAR_RED = (0.0, 0.0, 255.0)
-
+SAVE_IMAGE = True
 
 ###################################################################################################
 def detect_plates_in_scene(img_original_scene):
@@ -33,6 +33,10 @@ def detect_plates_in_scene(img_original_scene):
 
     # Proceso las imagenes y obtengo un grayScale y un Threshold. Luego las muestro.
     img_grayscale_scene, img_thresh_scene = Preprocess.preprocess(img_original_scene)
+
+    if SAVE_IMAGE:
+        cv2.imwrite("./output/showImage/grayscale.jpg", img_grayscale_scene)
+        cv2.imwrite("./output/showImage/thresh.jpg", img_thresh_scene)
 
     cv2.imshow("2-GrayScaleImage", img_grayscale_scene)
     cv2.imshow("3-AdaptativeThresholdImage", img_thresh_scene)

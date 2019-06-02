@@ -2,8 +2,8 @@ import cv2
 import numpy as np
 import os
 
-from DetectChars import loadKNNDataAndTrainKNN
-from DetectChars import detectCharsInPlates
+# from DetectChars import loadKNNDataAndTrainKNN
+# from DetectChars import detectCharsInPlates
 from DetectPlates import detect_plates_in_scene
 import PossiblePlate
 
@@ -13,6 +13,7 @@ SCALAR_WHITE = (255.0, 255.0, 255.0)
 SCALAR_YELLOW = (0.0, 255.0, 255.0)
 SCALAR_GREEN = (0.0, 255.0, 0.0)
 SCALAR_RED = (0.0, 0.0, 255.0)
+SAVE_IMAGE = True
 
 
 ###################################################################################################
@@ -24,7 +25,8 @@ def main():
     #     return
 
     # Abrimos la imagen
-    img_original_scene = cv2.imread("assets/plate5.jpeg")
+    img_original_scene = cv2.imread("assets/plate208.jpg")
+    img_original_scene = cv2.resize(img_original_scene, (1280, 720))
 
     if img_original_scene is None:
         print("\nError: image not read from file \n\n")
@@ -38,7 +40,7 @@ def main():
 
     for index, plate in enumerate(list_of_possible_plates):
         cv2.imshow("Muestra" + str(index), plate.imgPlate)
-        cv2.imwrite("possiblePlate" + str(index) + ".jpg", plate.imgPlate)
+        cv2.imwrite("./output/possiblePlate" + str(index) + ".jpg", plate.imgPlate)
 
     # # detect chars in plates
     # list_of_possible_plates = detectCharsInPlates(list_of_possible_plates)
