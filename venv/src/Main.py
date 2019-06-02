@@ -19,13 +19,10 @@ SAVE_IMAGE = True
 ###################################################################################################
 def main():
     # knn_training_successful = loadKNNDataAndTrainKNN()  # attempt KNN training
-    #
-    # if not knn_training_successful:
-    #     print("\nError: KNN traning was not successful\n")
-    #     return
+
 
     # Abrimos la imagen
-    img_original_scene = cv2.imread("assets/plate208.jpg")
+    img_original_scene = cv2.imread("assets/plateSorento.jpg")
     img_original_scene = cv2.resize(img_original_scene, (1280, 720))
 
     if img_original_scene is None:
