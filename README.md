@@ -1,1 +1,1 @@
-# plateRecognition
+# PRS (Plate Recognition System)
