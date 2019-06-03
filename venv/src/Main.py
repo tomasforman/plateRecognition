@@ -6,6 +6,8 @@ import os
 # from DetectChars import detectCharsInPlates
 from DetectPlates import detect_plates_in_scene
 import PossiblePlate
+from contours import read_plate
+
 
 # module level variables ##########################################################################
 SCALAR_BLACK = (0.0, 0.0, 0.0)
@@ -38,6 +40,7 @@ def main():
     for index, plate in enumerate(list_of_possible_plates):
         cv2.imshow("Muestra" + str(index), plate.imgPlate)
         cv2.imwrite("./output/possiblePlate" + str(index) + ".jpg", plate.imgPlate)
+        read_plate(plate.imgPlate)
 
     # # detect chars in plates
     # list_of_possible_plates = detectCharsInPlates(list_of_possible_plates)
