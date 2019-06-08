@@ -3,5 +3,3 @@ venv/lib
 venv/src/output
 venv/src/__pycache__/
 
-
-venv/src/__pycache__/DetectChars.cpython-37.pyc
