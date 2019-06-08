@@ -15,7 +15,10 @@ PLATE_WIDTH_PADDING_FACTOR = 1.3
 PLATE_HEIGHT_PADDING_FACTOR = 1.5
 SCALAR_WHITE = (255.0, 255.0, 255.0)
 SCALAR_RED = (0.0, 0.0, 255.0)
-SAVE_IMAGE = True
+SAVE_IMAGE = False
+NO_ERROR_PRINT_ENABLED = False
+SHOW_IMAGE = False
+
 
 ###################################################################################################
 def detect_plates_in_scene(img_original_scene):
@@ -28,8 +31,8 @@ def detect_plates_in_scene(img_original_scene):
     img_thresh_scene = np.zeros((height, width, 1), np.uint8)
     img_contours = np.zeros((height, width, 3), np.uint8)
 
-    cv2.destroyAllWindows()
-    cv2.imshow("1-Imagen original", img_original_scene)
+    if SHOW_IMAGE:
+        cv2.imshow("1-Imagen original", img_original_scene)
 
     # Proceso las imagenes y obtengo un grayScale y un Threshold. Luego las muestro.
     img_grayscale_scene, img_thresh_scene = Preprocess.preprocess(img_original_scene)
@@ -38,25 +41,21 @@ def detect_plates_in_scene(img_original_scene):
         cv2.imwrite("./output/showImage/grayscale.jpg", img_grayscale_scene)
         cv2.imwrite("./output/showImage/thresh.jpg", img_thresh_scene)
 
-    cv2.imshow("2-GrayScaleImage", img_grayscale_scene)
-    cv2.imshow("3-AdaptativeThresholdImage", img_thresh_scene)
+    if SHOW_IMAGE:
+        cv2.imshow("2-GrayScaleImage", img_grayscale_scene)
+        cv2.imshow("3-AdaptativeThresholdImage", img_thresh_scene)
 
-    # find all possible chars in the scene,
-    # this function first finds all contours, then only includes contours that could be chars
-    # (without comparison to other chars yet)
+    # Busco todos los posibles chars
+    # Primero buscamos todos los contornos, y despues los filtramos por los que pueden ser chars
+    # Sin comparar contra otros
     list_of_possible_chars_in_scene = find_possible_chars_in_scene(img_thresh_scene)
-    print(list_of_possible_plates)
 
     # given a list of all possible chars, find groups of matching chars
     # in the next steps each group of matching chars will attempt to be recognized as a plate
     list_of_lists_of_matching_chars_in_scene = DetectChars.find_list_of_lists_of_matching_chars(
         list_of_possible_chars_in_scene)
 
-    print("step 3 - list_of_lists_of_matching_chars_in_scene.Count = " + str(
-        len(list_of_lists_of_matching_chars_in_scene)))
-
     for list_of_matching_chars in list_of_lists_of_matching_chars_in_scene:
-        print('###########')
         int_random_blue = random.randint(0, 255)
         int_random_green = random.randint(0, 255)
         int_random_red = random.randint(0, 255)
@@ -68,8 +67,8 @@ def detect_plates_in_scene(img_original_scene):
 
         cv2.drawContours(img_contours, contours, -1, (int_random_blue, int_random_green, int_random_red))
 
-        cv2.imshow("5- Posibles contornos", img_contours)
-    # end if # show steps #########################################################################
+        if SHOW_IMAGE:
+            cv2.imshow("5- Posibles contornos", img_contours)
 
     for list_of_matching_chars in list_of_lists_of_matching_chars_in_scene:
         possible_plate = extract_plate(img_original_scene, list_of_matching_chars)
@@ -77,7 +76,8 @@ def detect_plates_in_scene(img_original_scene):
         if possible_plate.imgPlate is not None:
             list_of_possible_plates.append(possible_plate)
 
-    print("\n" + str(len(list_of_possible_plates)) + " possible plates found" + "\n")
+    if NO_ERROR_PRINT_ENABLED:
+        print("\n" + str(len(list_of_possible_plates)) + " possible plates found" + "\n")
 
     for i in range(0, len(list_of_possible_plates)):
         p2f_rect_points = cv2.boxPoints(list_of_possible_plates[i].rrLocationOfPlateInScene)
@@ -87,17 +87,15 @@ def detect_plates_in_scene(img_original_scene):
         cv2.line(img_contours, tuple(p2f_rect_points[2]), tuple(p2f_rect_points[3]), SCALAR_RED, 2)
         cv2.line(img_contours, tuple(p2f_rect_points[3]), tuple(p2f_rect_points[0]), SCALAR_RED, 2)
 
-        cv2.imshow("Posibles patentes", img_contours)
+        if SHOW_IMAGE:
+            cv2.imshow("Posibles patentes " + str(i), img_contours)
 
-        print("possible plate " + str(i))
+        if SAVE_IMAGE:
+            cv2.imwrite("./output/showImage/PosiblesPatentes.jpg", img_contours)
 
-        # Muestra cada uno de los cortes
-        # cv2.imshow("4b", list_of_possible_plates[i].imgPlate)
-        # cv2.waitKey(0)
-
-        print("\nPlate detection complete\n")
-
-        # cv2.waitKey(0)
+        if NO_ERROR_PRINT_ENABLED:
+            print("possible plate " + str(i))
+            print("\n### Plate detection complete ###\n")
 
     return list_of_possible_plates
 
@@ -123,12 +121,18 @@ def find_possible_chars_in_scene(img_thresh):
         possible_char = PossibleChar.PossibleChar(contours[i])
 
         if DetectChars.check_if_possible_char(possible_char):
-            int_count_of_possible_chars = int_count_of_possible_chars + 1  # increment count of possible chars
-            list_of_possible_chars.append(possible_char)  # and add to list of possible chars
+            int_count_of_possible_chars = int_count_of_possible_chars + 1
+            list_of_possible_chars.append(possible_char)
 
-    print("\nStep 2 - len(contours) = " + str(len(contours)))
-    print("Step 2 - int_count_of_possible_chars = " + str(int_count_of_possible_chars))
-    cv2.imshow("4-Find Possible Chars - Contours", img_contours)
+    if NO_ERROR_PRINT_ENABLED:
+        print("\nStep 2 - len(contours) = " + str(len(contours)))
+        print("Step 2 - int_count_of_possible_chars = " + str(int_count_of_possible_chars))
+
+    if SHOW_IMAGE:
+        cv2.imshow("4-Find Possible Chars - Contours", img_contours)
+
+    if SAVE_IMAGE:
+        cv2.imwrite("./output/showImage/4-Find Possible Chars-Contours.jpg", img_contours)
 
     return list_of_possible_chars
 
@@ -139,10 +143,10 @@ def find_possible_chars_in_scene(img_thresh):
 def extract_plate(img_original, list_of_matching_chars):
     possible_plate = PossiblePlate.PossiblePlate()
 
-    # sort chars from left to right based on x position
+    # Ordenamos los chars de izquierda a derecha en base a la posicion X
     list_of_matching_chars.sort(key=lambda matching_char: matching_char.intCenterX)
 
-    # calculate the center point of the plate
+    # Calculamos el punto central de la patente
     flt_plate_center_x = (list_of_matching_chars[0].intCenterX + list_of_matching_chars[
         len(list_of_matching_chars) - 1].intCenterX) / 2.0
 
@@ -170,8 +174,8 @@ def extract_plate(img_original, list_of_matching_chars):
     flt_opposite = list_of_matching_chars[len(list_of_matching_chars) - 1].intCenterY - list_of_matching_chars[
         0].intCenterY
 
-    flt_hypotenuse = DetectChars.distanceBetweenChars(list_of_matching_chars[0],
-                                                      list_of_matching_chars[len(list_of_matching_chars) - 1])
+    flt_hypotenuse = DetectChars.distance_between_chars(list_of_matching_chars[0],
+                                                        list_of_matching_chars[len(list_of_matching_chars) - 1])
 
     flt_correction_angle_in_rad = math.asin(flt_opposite / flt_hypotenuse)
 

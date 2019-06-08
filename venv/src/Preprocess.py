@@ -23,6 +23,8 @@ def preprocess(img_original):
 
     img_blurred = cv2.GaussianBlur(img_max_contrast_grayscale, GAUSSIAN_SMOOTH_FILTER_SIZE, 0)
 
+    cv2.imwrite("./output/showImage/blur.jpg", img_blurred)
+
     # img_thresh = cv2.adaptiveThreshold(img_blurred, 255.0, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV,
     #                                    ADAPTIVE_THRESH_BLOCK_SIZE, ADAPTIVE_THRESH_WEIGHT)
 
@@ -35,7 +37,6 @@ def preprocess(img_original):
 def extract_value(img_original):
     height, width, num_channels = img_original.shape
 
-    # Creo la matriz vacia del tamaño de la imagen
     img_HSV = np.zeros((height, width, 3), np.uint8)
 
     # Transformo la imagen a HSV
