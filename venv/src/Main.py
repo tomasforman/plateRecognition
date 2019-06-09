@@ -1,6 +1,7 @@
 import cv2
 import os
 import time
+from multiprocessing import Process
 
 from DetectPlates import detect_plates_in_scene
 import PossiblePlate
@@ -12,7 +13,10 @@ SCALAR_WHITE = (255.0, 255.0, 255.0)
 SCALAR_YELLOW = (0.0, 255.0, 255.0)
 SCALAR_GREEN = (0.0, 255.0, 0.0)
 SCALAR_RED = (0.0, 0.0, 255.0)
-SAVE_IMAGE = False
+
+IMG_MAX_WIDTH = 1280
+
+SAVE_IMAGE = True
 NO_ERROR_PRINT_ENABLED = False
 SHOW_IMAGE = False
 
@@ -24,7 +28,12 @@ def recognize_plate(img_original_scene):
         os.system("pause")
         return
 
-    img_original_scene = cv2.resize(img_original_scene, (1280, 720))
+    height, width = img_original_scene.shape[:2]
+    img_scale = IMG_MAX_WIDTH / width
+
+    new_x, new_y = img_original_scene.shape[1] * img_scale, img_original_scene.shape[0] * img_scale
+
+    img_original_scene = cv2.resize(img_original_scene, (int(new_x), 720))
 
     # Paso 1: Detectar las posibles patentes en la imagen
     list_of_possible_plates = detect_plates_in_scene(img_original_scene)
@@ -47,7 +56,7 @@ def recognize_plate(img_original_scene):
 
     #  TODO habria que guardar la imagen con la patente y recuadrar la patente
 
-    # cv2.waitKey(0)
+    cv2.waitKey(0)
 
     return
 
@@ -109,13 +118,12 @@ def write_license_plate_chars_on_image(img_original_scene, lic_plate):
 
 
 def main():
-    img = cv2.imread("assets/plate208.jpg")
+    img1 = cv2.imread("assets/plateSorento.jpg")
     start_time = time.time()
-    recognize_plate(img)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    recognize_plate(img1)
+    finish_time = time.time() - start_time
+    print("--- Image 1: %s seconds ---" % finish_time)
 
 
 if __name__ == "__main__":
     main()
-
-# https://github.com/MicrocontrollersAndMore/OpenCV_3_License_Plate_Recognition_Python/blob/master/readme.txt

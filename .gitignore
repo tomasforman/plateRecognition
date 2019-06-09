@@ -1,5 +1,5 @@
 .DS_Store
 venv/lib
-venv/src/output
+venv/src/output/showImage
 venv/src/__pycache__/
 
