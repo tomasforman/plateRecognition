@@ -1,28 +1,35 @@
 # DetectPlates.py
 
-import cv2
-import numpy as np
 import math
 import random
+import time
 
-import Preprocess
+import cv2
+import numpy as np
+
 import DetectChars
-import PossiblePlate
 import PossibleChar
+import PossiblePlate
+import Preprocess
 
 # module level variables ##########################################################################
 PLATE_WIDTH_PADDING_FACTOR = 1.3
 PLATE_HEIGHT_PADDING_FACTOR = 1.5
 SCALAR_WHITE = (255.0, 255.0, 255.0)
 SCALAR_RED = (0.0, 0.0, 255.0)
-SAVE_IMAGE = True
+SAVE_IMAGE = False
 NO_ERROR_PRINT_ENABLED = False
 SHOW_IMAGE = False
+SHOW_TIME = False
+SUPER_SPEED_MODE = True
 
 
 ###################################################################################################
+# INPUT: imagen
+# OUTPUT: Lista de PossiblePlate
+
 def detect_plates_in_scene(img_original_scene):
-    list_of_possible_plates = []
+    list_of_possible_plates: [PossiblePlate] = []
 
     height, width, num_channels = img_original_scene.shape
 
@@ -31,44 +38,50 @@ def detect_plates_in_scene(img_original_scene):
     img_thresh_scene = np.zeros((height, width, 1), np.uint8)
     img_contours = np.zeros((height, width, 3), np.uint8)
 
-    if SHOW_IMAGE:
-        cv2.imshow("1-Imagen original", img_original_scene)
-
-    # Proceso las imagenes y obtengo un grayScale y un Threshold. Luego las muestro.
+    # Proceso el INPUT y obtengo un grayScale y un Threshold.
     img_grayscale_scene, img_thresh_scene = Preprocess.preprocess(img_original_scene)
 
+    # Guardo como jpg el grayScale y Threshold.
     if SAVE_IMAGE:
         cv2.imwrite("./output/showImage/grayscale.jpg", img_grayscale_scene)
         cv2.imwrite("./output/showImage/thresh.jpg", img_thresh_scene)
 
+    # Muestro el grayScale y Threshold.
     if SHOW_IMAGE:
-        cv2.imshow("2-GrayScaleImage", img_grayscale_scene)
-        cv2.imshow("3-AdaptativeThresholdImage", img_thresh_scene)
+        cv2.imshow("GrayScaleImage", img_grayscale_scene)
+        cv2.imshow("AdaptativeThresholdImage", img_thresh_scene)
 
     # Busco todos los posibles chars
     # Primero buscamos todos los contornos, y despues los filtramos por los que pueden ser chars
     # Sin comparar contra otros
-    list_of_possible_chars_in_scene = find_possible_chars_in_scene(img_thresh_scene)
+    if SHOW_TIME:
+        start_time_2 = time.time()
+        list_of_possible_chars_in_scene = find_possible_chars_in_scene(img_thresh_scene)
+        finish_time_2 = time.time() - start_time_2
+        print("--- Find possible chars: %s seconds ---" % finish_time_2)
+    else:
+        list_of_possible_chars_in_scene: [PossibleChar] = find_possible_chars_in_scene(img_thresh_scene)
 
-    # given a list of all possible chars, find groups of matching chars
-    # in the next steps each group of matching chars will attempt to be recognized as a plate
+    # Busco grupos de posibles chars
     list_of_lists_of_matching_chars_in_scene = DetectChars.find_list_of_lists_of_matching_chars(
         list_of_possible_chars_in_scene)
 
-    for list_of_matching_chars in list_of_lists_of_matching_chars_in_scene:
-        int_random_blue = random.randint(0, 255)
-        int_random_green = random.randint(0, 255)
-        int_random_red = random.randint(0, 255)
+    # Dibujo los contornos a los posibles chars
+    if not SUPER_SPEED_MODE:
+        for list_of_matching_chars in list_of_lists_of_matching_chars_in_scene:
+            int_random_blue = random.randint(0, 255)
+            int_random_green = random.randint(0, 255)
+            int_random_red = random.randint(0, 255)
 
-        contours = []
+            contours = []
 
-        for matching_char in list_of_matching_chars:
-            contours.append(matching_char.contour)
+            for matching_char in list_of_matching_chars:
+                contours.append(matching_char.contour)
 
-        cv2.drawContours(img_contours, contours, -1, (int_random_blue, int_random_green, int_random_red))
+            cv2.drawContours(img_contours, contours, -1, (int_random_blue, int_random_green, int_random_red))
 
-        if SHOW_IMAGE:
-            cv2.imshow("5- Posibles contornos", img_contours)
+            if SHOW_IMAGE:
+                cv2.imshow("5- Posibles contornos", img_contours)
 
     for list_of_matching_chars in list_of_lists_of_matching_chars_in_scene:
         possible_plate = extract_plate(img_original_scene, list_of_matching_chars)
@@ -102,12 +115,15 @@ def detect_plates_in_scene(img_original_scene):
 
 # end function
 
-###################################################################################################
-# Buscamos posibles caracteres basandonos en el tamaño ############################################
-###################################################################################################
-def find_possible_chars_in_scene(img_thresh):
-    list_of_possible_chars = []
-    int_count_of_possible_chars = 0
+######################################################
+# Buscamos posibles caracteres basandonos en el tamaño
+# INPUT: Imagen Threshold
+# OUTPUT: Lista de PossibleChar
+######################################################
+
+def find_possible_chars_in_scene(img_thresh) -> [PossibleChar]:
+    list_of_possible_chars: [PossibleChar] = []
+    int_count_of_possible_chars: int = 0
     img_thresh_copy = img_thresh.copy()
 
     contours, npa_hierarchy = cv2.findContours(img_thresh_copy, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
@@ -116,7 +132,8 @@ def find_possible_chars_in_scene(img_thresh):
     img_contours = np.zeros((height, width, 3), np.uint8)
 
     for i in range(0, len(contours)):
-        cv2.drawContours(img_contours, contours, i, SCALAR_WHITE, 3)
+        if not SUPER_SPEED_MODE:
+            cv2.drawContours(img_contours, contours, i, SCALAR_WHITE, 3)
 
         possible_char = PossibleChar.PossibleChar(contours[i])
 
@@ -125,11 +142,11 @@ def find_possible_chars_in_scene(img_thresh):
             list_of_possible_chars.append(possible_char)
 
     if NO_ERROR_PRINT_ENABLED:
-        print("\nStep 2 - len(contours) = " + str(len(contours)))
-        print("Step 2 - int_count_of_possible_chars = " + str(int_count_of_possible_chars))
+        print("\n[F:Find Possible Chars in Scene] - len(contours) = " + str(len(contours)))
+        print("\n[F:Find Possible Chars in Scene] - int_count_of_possible_chars = " + str(int_count_of_possible_chars))
 
     if SHOW_IMAGE:
-        cv2.imshow("4-Find Possible Chars - Contours", img_contours)
+        cv2.imshow("[F:Find Possible Chars in Scene] - Contours", img_contours)
 
     if SAVE_IMAGE:
         cv2.imwrite("./output/showImage/4-Find Possible Chars-Contours.jpg", img_contours)

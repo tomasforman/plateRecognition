@@ -62,7 +62,7 @@ def find_possible_chars_in_plate(img_grayscale, img_thresh):
 
 
 ###################################################################################################
-def check_if_possible_char(possible_char):
+def check_if_possible_char(possible_char: PossibleChar) -> bool:
     # Es un primer paso para ver si el contorno puede ser un caracter.
     # No estamos comparando contra otros caracteres
     if (possible_char.intBoundingRectArea > MIN_PIXEL_AREA

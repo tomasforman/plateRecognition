@@ -1,11 +1,9 @@
-import cv2
 import os
 import time
-from multiprocessing import Process
+
+import cv2
 
 from DetectPlates import detect_plates_in_scene
-import PossiblePlate
-from contours import read_plate
 
 # variables ##########################################################################
 SCALAR_BLACK = (0.0, 0.0, 0.0)
@@ -41,13 +39,14 @@ def recognize_plate(img_original_scene):
     if len(list_of_possible_plates) == 0:
         print("\n### No license plates were detected ###\n")
     else:
+        print('Possible plates:', len(list_of_possible_plates))
         # Paso 2: Leer los caracteres de las posibles patentes
-        for index, plate in enumerate(list_of_possible_plates):
-            if SAVE_IMAGE:
-                cv2.imwrite("./output/possiblePlate" + str(index) + ".jpg", plate.imgPlate)
-            if SHOW_IMAGE:
-                cv2.imshow("Muestra" + str(index), plate.imgPlate)
-            # plate_chars = read_plate(plate.imgPlate)
+        # for index, plate in enumerate(list_of_possible_plates):
+        #     if SAVE_IMAGE:
+        #         cv2.imwrite("./output/possiblePlate" + str(index) + ".jpg", plate.imgPlate)
+        #     if SHOW_IMAGE:
+        #         cv2.imshow("Muestra" + str(index), plate.imgPlate)
+        # plate_chars = read_plate(plate.imgPlate)
 
         # Si no se encontraron caracteres en la patente
         # if len(plate_chars) == 0:
@@ -122,7 +121,7 @@ def main():
     start_time = time.time()
     recognize_plate(img1)
     finish_time = time.time() - start_time
-    print("--- Image 1: %s seconds ---" % finish_time)
+    print("--- Time to process: %s seconds ---" % finish_time)
 
 
 if __name__ == "__main__":
