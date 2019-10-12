@@ -46,7 +46,7 @@ SCALAR_GREEN = (0.0, 255.0, 0.0)
 
 
 ###################################################################################################
-def find_possible_chars_in_plate(img_grayscale, img_thresh):
+def find_possible_chars_in_plate(img_grayscale, img_thresh) -> [PossibleChar]:
     list_of_possible_chars = []
     contours = []
     img_thresh_copy = img_thresh.copy()
@@ -58,6 +58,7 @@ def find_possible_chars_in_plate(img_grayscale, img_thresh):
         possible_char = PossibleChar.PossibleChar(contour)
         if check_if_possible_char(possible_char):
             list_of_possible_chars.append(possible_char)
+
     return list_of_possible_chars
 
 
@@ -108,7 +109,7 @@ def find_list_of_lists_of_matching_chars(list_of_possible_chars):
 
 
 ###################################################################################################
-def find_list_of_matching_chars(possible_char, list_of_chars):
+def find_list_of_matching_chars(possible_char: PossibleChar, list_of_chars):
     # the purpose of this function is, given a possible char and a big list of possible chars,
     # find all chars in the big list that are a match for the single possible char,
     list_of_matching_chars = []
@@ -151,7 +152,7 @@ def find_list_of_matching_chars(possible_char, list_of_chars):
 
 ###################################################################################################
 # Calculamos la distancia entre dos chars
-def distance_between_chars(first_char, second_char):
+def distance_between_chars(first_char: PossibleChar, second_char: PossibleChar) -> float:
     int_x = abs(first_char.intCenterX - second_char.intCenterX)
     int_y = abs(first_char.intCenterY - second_char.intCenterY)
 
@@ -160,7 +161,7 @@ def distance_between_chars(first_char, second_char):
 
 ###################################################################################################
 #  Calculamos el angulo entre dos chars en grados
-def angle_between_chars(first_char, second_char):
+def angle_between_chars(first_char: PossibleChar, second_char: PossibleChar) -> float:
     flt_adj = float(abs(first_char.intCenterX - second_char.intCenterX))
     flt_opp = float(abs(first_char.intCenterY - second_char.intCenterY))
 

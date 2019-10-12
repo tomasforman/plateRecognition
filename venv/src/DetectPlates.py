@@ -1,6 +1,7 @@
 # DetectPlates.py
 
 import math
+import os
 import random
 import time
 
@@ -28,7 +29,12 @@ SUPER_SPEED_MODE = True
 # INPUT: imagen
 # OUTPUT: Lista de PossiblePlate
 
-def detect_plates_in_scene(img_original_scene):
+def detect_plates_in_scene(img_original_scene) -> [PossiblePlate]:
+    if img_original_scene is None:
+        print("\n### Error: image not found ### \n\n")
+        os.system("pause")
+        return
+
     list_of_possible_plates: [PossiblePlate] = []
 
     height, width, num_channels = img_original_scene.shape
@@ -154,10 +160,12 @@ def find_possible_chars_in_scene(img_thresh) -> [PossibleChar]:
     return list_of_possible_chars
 
 
-###################################################################################################
-# Este metodo tiene la posta, recorta la imagen de la patente #####################################
-###################################################################################################
-def extract_plate(img_original, list_of_matching_chars):
+##########################################################
+# Recorta la imagen original y devuelve la patente cortada
+# INPUT: Imagen y lista de chars a cortar
+# OUTPUT: PossiblePlate con la imagen cropeada, los demas parametros en default
+###########################################################
+def extract_plate(img_original, list_of_matching_chars) -> PossiblePlate:
     possible_plate = PossiblePlate.PossiblePlate()
 
     # Ordenamos los chars de izquierda a derecha en base a la posicion X
@@ -216,3 +224,5 @@ def extract_plate(img_original, list_of_matching_chars):
     possible_plate.imgPlate = img_cropped
 
     return possible_plate
+
+# end function

@@ -44,6 +44,8 @@ def extract_value(img_original):
 
     img_hue, img_saturation, img_value = cv2.split(img_HSV)
 
+    print(type(img_value))
+
     return img_value
 
 

@@ -3,6 +3,7 @@ import time
 
 import cv2
 
+import PossiblePlate
 from DetectPlates import detect_plates_in_scene
 
 # variables ##########################################################################
@@ -20,47 +21,43 @@ SHOW_IMAGE = False
 
 
 ###################################################################################################
-def recognize_plate(img_original_scene):
+def recognize_plate(img_original_scene) -> [PossiblePlate]:
     if img_original_scene is None:
         print("\n### Error: image not found ### \n\n")
         os.system("pause")
         return
 
-    height, width = img_original_scene.shape[:2]
-    img_scale = IMG_MAX_WIDTH / width
+    list_of_possible_plates: [PossiblePlate] = []
 
-    new_x, new_y = img_original_scene.shape[1] * img_scale, img_original_scene.shape[0] * img_scale
+    img_resized = resize_image(img_original_scene)
 
-    img_original_scene = cv2.resize(img_original_scene, (int(new_x), 720))
+    # Detectar las posibles patentes en la imagen
+    list_of_possible_plates = detect_plates_in_scene(img_resized)
 
-    # Paso 1: Detectar las posibles patentes en la imagen
-    list_of_possible_plates = detect_plates_in_scene(img_original_scene)
-
-    if len(list_of_possible_plates) == 0:
-        print("\n### No license plates were detected ###\n")
-    else:
-        print('Possible plates:', len(list_of_possible_plates))
-        # Paso 2: Leer los caracteres de las posibles patentes
-        # for index, plate in enumerate(list_of_possible_plates):
-        #     if SAVE_IMAGE:
-        #         cv2.imwrite("./output/possiblePlate" + str(index) + ".jpg", plate.imgPlate)
-        #     if SHOW_IMAGE:
-        #         cv2.imshow("Muestra" + str(index), plate.imgPlate)
-        # plate_chars = read_plate(plate.imgPlate)
-
-        # Si no se encontraron caracteres en la patente
-        # if len(plate_chars) == 0:
-        #     print("\nno characters were detected\n\n")
-        #     return
-
-    #  TODO habria que guardar la imagen con la patente y recuadrar la patente
-
-    cv2.waitKey(0)
-
-    return
+    return list_of_possible_plates
 
 
 ###################################################################################################
+def resize_image(img):
+    height, width = img.shape[:2]
+
+    img_scale = IMG_MAX_WIDTH / width
+
+    new_x, new_y = img.shape[1] * img_scale, img.shape[0] * img_scale
+
+    return cv2.resize(img, (int(new_x), 720))
+
+
+def save_image(img, path):
+    if img is None:
+        print("\n### Error: image not found ### \n\n")
+        os.system("pause")
+        return
+    cv2.imwrite(path, img)
+
+
+###################################################################################################
+# NO SE USA
 
 def draw_rectangle_around_plate(img_original_scene, lic_plate, color):
     p2f_rect_points = cv2.boxPoints(lic_plate.rrLocationOfPlateInScene)
@@ -71,6 +68,7 @@ def draw_rectangle_around_plate(img_original_scene, lic_plate, color):
 
 
 ###################################################################################################
+# NO SE USA
 
 def write_license_plate_chars_on_image(img_original_scene, lic_plate):
     pt_center_of_text_area_x = 0
@@ -116,12 +114,19 @@ def write_license_plate_chars_on_image(img_original_scene, lic_plate):
                 int_font_face, flt_font_scale, SCALAR_YELLOW, int_font_thickness)
 
 
+###################################################################################################
+
+
 def main():
-    img1 = cv2.imread("assets/plateSorento.jpg")
+    img1 = cv2.imread("assets/plateChevrolet.jpg")
     start_time = time.time()
-    recognize_plate(img1)
+    list_of_possible_plates = recognize_plate(img1)
     finish_time = time.time() - start_time
     print("--- Time to process: %s seconds ---" % finish_time)
+    print("--- Possible plates: %s ---" % len(list_of_possible_plates))
+
+    for i in range(0, len(list_of_possible_plates)):
+        save_image(list_of_possible_plates[i].imgPlate, './output/showImage/PosiblePatente' + str(i) + '.jpg')
 
 
 if __name__ == "__main__":
