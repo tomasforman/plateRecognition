@@ -142,20 +142,25 @@ def on_message(client, userdata, msg):
         print("--- Time to process: %s seconds ---" % finish_time)
         to_publish = '"{"plate": "' + jpg_as_text + '" "id": "' + payload["id"] + '"}"'
         client.publish("plates", to_publish)
-        file_name = f'/tmp/plates/{payload["id"]}.jpg'
-        cv2.imwrite(file_name, buffer)
-        upload_to_s3(file_name)
+        # file_name = f'/tmp/plates/{payload["id"]}.jpg'
+        # cv2.imwrite(file_name, buffer)
+        # upload_to_s3(file_name)
 
 
 def main():
+    mq_host = os.getenv('MQTT_HOST')
+    mq_port = os.getenv('MQTT_PORT')
+    mq_topic = os.getenv('MQTT_TOPIC')
+    print(f"[SETUP] MQTT host {mq_host} MQTT port {mq_port}")
     client = mqtt.Client()
-    client.connect(os.getenv('MQTT_PORT'))
-    client.subscribe("images")
+    client.connect(host=mq_host, port=int(mq_port))
+    client.subscribe(mq_topic)
 
     client.on_message = on_message
 
     print("Waiting for messages .....")
     client.loop_forever()
+
 
 if __name__ == "__main__":
     main()
