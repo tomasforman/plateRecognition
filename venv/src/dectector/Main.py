@@ -1,9 +1,12 @@
+import base64
 import os
 import time
-
+import paho.mqtt.client as mqtt
 import cv2
-
+import json
 import PossiblePlate
+import io
+from imageio import imread
 from DetectPlates import detect_plates_in_scene
 
 # variables ##########################################################################
@@ -26,7 +29,6 @@ def recognize_plate(img_original_scene) -> [PossiblePlate]:
         print("\n### Error: image not found ### \n\n")
         os.system("pause")
         return
-
     list_of_possible_plates: [PossiblePlate] = []
 
     img_resized = resize_image(img_original_scene)
@@ -116,18 +118,44 @@ def write_license_plate_chars_on_image(img_original_scene, lic_plate):
 
 ###################################################################################################
 
+def process(b64):
+    img = imread(io.BytesIO(base64.b64decode(b64)))
+    cv2_img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    return recognize_plate(cv2_img)
+
+
+def on_message(client, userdata, msg):
+    start_time = time.time()
+    payload = json.loads(msg.payload)
+    print(msg.payload)
+    print(payload["id"])
+    b64_img = payload["image"]
+    img = imread(io.BytesIO(base64.b64decode(b64_img)))
+    cv2_img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    list_of_possible_plates = recognize_plate(cv2_img)
+    print(len(list_of_possible_plates))
+    if len(list_of_possible_plates) > 0:
+        plate_img = list_of_possible_plates[0].imgPlate
+        _, buffer = cv2.imencode('.jpg', plate_img)
+        jpg_as_text = base64.b64encode(buffer)
+        finish_time = time.time() - start_time
+        print("--- Time to process: %s seconds ---" % finish_time)
+        to_publish = '"{"plate": "' + jpg_as_text + '" "id": "' + payload["id"] + '"}"'
+        client.publish("plates", to_publish)
+        file_name = f'/tmp/plates/{payload["id"]}.jpg'
+        cv2.imwrite(file_name, buffer)
+        upload_to_s3(file_name)
+
 
 def main():
-    img1 = cv2.imread("assets/plateChevrolet.jpg")
-    start_time = time.time()
-    list_of_possible_plates = recognize_plate(img1)
-    finish_time = time.time() - start_time
-    print("--- Time to process: %s seconds ---" % finish_time)
-    print("--- Possible plates: %s ---" % len(list_of_possible_plates))
+    client = mqtt.Client()
+    client.connect(os.getenv('MQTT_PORT'))
+    client.subscribe("images")
 
-    for i in range(0, len(list_of_possible_plates)):
-        save_image(list_of_possible_plates[i].imgPlate, './output/showImage/PosiblePatente' + str(i) + '.jpg')
+    client.on_message = on_message
 
+    print("Waiting for messages .....")
+    client.loop_forever()
 
 if __name__ == "__main__":
     main()
