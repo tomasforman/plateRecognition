@@ -17,7 +17,7 @@ IMG_MAX_WIDTH = 1280
 
 SAVE_IMAGE = True
 NO_ERROR_PRINT_ENABLED = False
-SHOW_IMAGE = False
+SHOW_IMAGE = True
 
 
 ###################################################################################################
@@ -30,6 +30,8 @@ def recognize_plate(img_original_scene) -> [PossiblePlate]:
     list_of_possible_plates: [PossiblePlate] = []
 
     img_resized = resize_image(img_original_scene)
+
+    cv2.imshow('resize', img_resized)
 
     # Detectar las posibles patentes en la imagen
     list_of_possible_plates = detect_plates_in_scene(img_resized)

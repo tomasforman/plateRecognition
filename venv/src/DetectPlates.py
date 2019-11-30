@@ -18,11 +18,11 @@ PLATE_WIDTH_PADDING_FACTOR = 1.3
 PLATE_HEIGHT_PADDING_FACTOR = 1.5
 SCALAR_WHITE = (255.0, 255.0, 255.0)
 SCALAR_RED = (0.0, 0.0, 255.0)
-SAVE_IMAGE = False
+SAVE_IMAGE = True
 NO_ERROR_PRINT_ENABLED = False
-SHOW_IMAGE = False
+SHOW_IMAGE = True
 SHOW_TIME = False
-SUPER_SPEED_MODE = True
+SUPER_SPEED_MODE = False
 
 
 ###################################################################################################
@@ -68,9 +68,12 @@ def detect_plates_in_scene(img_original_scene) -> [PossiblePlate]:
     else:
         list_of_possible_chars_in_scene: [PossibleChar] = find_possible_chars_in_scene(img_thresh_scene)
 
+
     # Busco grupos de posibles chars
     list_of_lists_of_matching_chars_in_scene = DetectChars.find_list_of_lists_of_matching_chars(
         list_of_possible_chars_in_scene)
+
+    print(len(list_of_lists_of_matching_chars_in_scene))
 
     # Dibujo los contornos a los posibles chars
     if not SUPER_SPEED_MODE:
@@ -136,14 +139,17 @@ def find_possible_chars_in_scene(img_thresh) -> [PossibleChar]:
 
     height, width = img_thresh.shape
     img_contours = np.zeros((height, width, 3), np.uint8)
+    img_contours_filtered = np.zeros((height, width, 3), np.uint8)
 
     for i in range(0, len(contours)):
         if not SUPER_SPEED_MODE:
             cv2.drawContours(img_contours, contours, i, SCALAR_WHITE, 3)
+            cv2.imshow("[F:Find Possible Chars in Scene] - Contours", img_contours)
 
         possible_char = PossibleChar.PossibleChar(contours[i])
-
         if DetectChars.check_if_possible_char(possible_char):
+            cv2.drawContours(img_contours_filtered, contours, i, SCALAR_WHITE, 3)
+            cv2.imshow("[F:Find Possible Chars in Scene] - Contours filtered", img_contours_filtered)
             int_count_of_possible_chars = int_count_of_possible_chars + 1
             list_of_possible_chars.append(possible_char)
 
@@ -156,6 +162,9 @@ def find_possible_chars_in_scene(img_thresh) -> [PossibleChar]:
 
     if SAVE_IMAGE:
         cv2.imwrite("./output/showImage/4-Find Possible Chars-Contours.jpg", img_contours)
+
+    if SAVE_IMAGE:
+        cv2.imwrite("./output/showImage/4-Find Possible Chars-Contours-Filtered.jpg", img_contours_filtered)
 
     return list_of_possible_chars
 
