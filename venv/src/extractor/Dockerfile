@@ -1,8 +1,15 @@
-FROM python:3.7.5
+FROM python:3
 
-RUN mkdir /app
-ADD . /app
-RUN pip install -r /app/requirements.txt
+ADD ./ /app
 
-ENV MQTT_PORT=127.0.0.1
-CMD python /app/Main.py
+RUN apt update && apt upgrade
+
+RUN apt install -y tesseract-ocr libtesseract-dev
+
+RUN cd /app && pip install -r requirements.txt
+
+ENV MQTT_PORT=1883
+ENV MQTT_TOPIC=plates
+ENV TEXT_TOPIC=text
+
+CMD [ "python", "/app/Main.py" ]

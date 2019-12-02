@@ -22,6 +22,7 @@ SAVE_IMAGE = True
 NO_ERROR_PRINT_ENABLED = False
 SHOW_IMAGE = False
 
+PLATES_TOPIC = os.getenv("PLATES_TOPIC")
 
 ###################################################################################################
 def recognize_plate(img_original_scene) -> [PossiblePlate]:
@@ -141,7 +142,7 @@ def on_message(client, userdata, msg):
         finish_time = time.time() - start_time
         print("--- Time to process: %s seconds ---" % finish_time)
         to_publish = '"{"plate": "' + jpg_as_text + '" "id": "' + payload["id"] + '"}"'
-        client.publish("plates", to_publish)
+        client.publish(PLATES_TOPIC, to_publish)
         # file_name = f'/tmp/plates/{payload["id"]}.jpg'
         # cv2.imwrite(file_name, buffer)
         # upload_to_s3(file_name)
