@@ -17,7 +17,7 @@ IMG_MAX_WIDTH = 1280
 
 SAVE_IMAGE = True
 NO_ERROR_PRINT_ENABLED = False
-SHOW_IMAGE = True
+SHOW_IMAGE = False
 
 
 ###################################################################################################
@@ -120,7 +120,7 @@ def write_license_plate_chars_on_image(img_original_scene, lic_plate):
 
 
 def main():
-    img1 = cv2.imread("assets/plateChevrolet.jpg")
+    img1 = cv2.imread("assets/plateToyota.jpg")
     start_time = time.time()
     list_of_possible_plates = recognize_plate(img1)
     finish_time = time.time() - start_time

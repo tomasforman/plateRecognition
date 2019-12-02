@@ -20,9 +20,9 @@ SCALAR_WHITE = (255.0, 255.0, 255.0)
 SCALAR_RED = (0.0, 0.0, 255.0)
 SAVE_IMAGE = True
 NO_ERROR_PRINT_ENABLED = False
-SHOW_IMAGE = True
+SHOW_IMAGE = False
 SHOW_TIME = False
-SUPER_SPEED_MODE = False
+SUPER_SPEED_MODE = True
 
 
 ###################################################################################################
