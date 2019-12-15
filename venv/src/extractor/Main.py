@@ -7,10 +7,10 @@ import base64
 import pytesseract
 import re
 
-import paho.mqtt.client as mqtt
+import pika
 
 PATTERN = "^[A-Z]{2}[0-9]{3}[A-Z]{2}$"
-TEXT_TOPIC = os.getenv("TEXT_TOPIC")
+TEXT_TOPIC = "text"
 
 def extract_text(base4):
     img = Image.open(BytesIO(base64.b64decode(base4)))
@@ -25,21 +25,24 @@ def extract_text(base4):
     return first[-2:] + second + third[:2]
 
 
-def on_message(client, userdata, msg):
-    payload = json.loads(msg.payload)
+def callback(ch, method, properties, body):
+    print(" [x] Received %r" % body)
+    payload = json.loads(body)
     img = payload["plate"]
     plate = extract_text(img)
-    payload = '{"id": "' + id + '", "plate": "' + plate + '"}'
-    client.publish(TEXT_TOPIC, payload)
+    payload_to_send = '{"id": "' + payload['id'] + '", "plate": "' + plate + '"}'
+    print(payload_to_send)
+    ch.basic_publish(exchange='', routing_key='text', body=payload_to_send)
 
 
-mqtt_client = mqtt.Client()
-mq_port = os.getenv('MQTT_PORT')
-mq_host = os.getenv('MQTT_HOST')
-mq_topic = os.getenv('MQTT_TOPIC')
-mqtt_client.connect(host=mq_host, port=int(mq_port))
-mqtt_client.subscribe(mq_topic)
-mqtt_client.on_message = on_message
-print("Waiting for messages .....")
-mqtt_client.loop_forever()
+mq_host = os.getenv('RABBITMQ_HOST')
 
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host=mq_host))
+channel = connection.channel()
+
+channel.queue_declare(queue='plate')
+channel.basic_consume(queue='plate', on_message_callback=callback, auto_ack=True)
+
+print(' [*] Waiting for messages. To exit press CTRL+C')
+channel.start_consuming()

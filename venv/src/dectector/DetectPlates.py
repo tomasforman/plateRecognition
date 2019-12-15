@@ -18,11 +18,11 @@ PLATE_WIDTH_PADDING_FACTOR = 1.3
 PLATE_HEIGHT_PADDING_FACTOR = 1.5
 SCALAR_WHITE = (255.0, 255.0, 255.0)
 SCALAR_RED = (0.0, 0.0, 255.0)
-SAVE_IMAGE = False
+SAVE_IMAGE = True
 NO_ERROR_PRINT_ENABLED = False
-SHOW_IMAGE = False
+SHOW_IMAGE = True
 SHOW_TIME = False
-SUPER_SPEED_MODE = True
+SUPER_SPEED_MODE = False
 
 
 ###################################################################################################
@@ -37,7 +37,7 @@ def detect_plates_in_scene(img_original_scene) -> [PossiblePlate]:
 
     list_of_possible_plates: [PossiblePlate] = []
 
-    height, width, num_channels = img_original_scene.shape
+    height, width, num_ch = img_original_scene.shape
 
     # Creo las matrices vacias del tamaño de la imagen
     img_grayscale_scene = np.zeros((height, width, 1), np.uint8)

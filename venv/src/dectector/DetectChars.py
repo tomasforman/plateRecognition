@@ -14,13 +14,13 @@ import PossibleChar
 kNearest = cv2.ml.KNearest_create()
 
 # constants for checkIfPossibleChar, this checks one possible char only (does not compare to another char)
-MIN_PIXEL_WIDTH = 12
-MIN_PIXEL_HEIGHT = 18
+MIN_PIXEL_WIDTH = 10
+MIN_PIXEL_HEIGHT = 16
 
-MIN_ASPECT_RATIO = 0.6
+MIN_ASPECT_RATIO = 0.5
 MAX_ASPECT_RATIO = 1.0
 
-MIN_PIXEL_AREA = 300
+MIN_PIXEL_AREA = 200
 
 # constants for comparing two chars
 MIN_DIAG_SIZE_MULTIPLE_AWAY = 0.3

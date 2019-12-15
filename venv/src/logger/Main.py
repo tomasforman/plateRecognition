@@ -1,28 +1,36 @@
 import os
 
-from paho import mqtt
+import pika
 from pymongo import MongoClient
 import json
 
+S3_DNS = "https://prs-plates.s3.amazonaws.com"
+
 client = MongoClient()
 db = client.plates
-
 plates = db.plates
 
-
-def on_message(client, userdata, msg):
-    payload = json.loads(msg.payload)
+def callback(ch, method, properties, msg):
+    payload = json.loads(msg)
+    id = payload["id"]
+    [camera_id, timestamp] = id.split("@")
     plate = {
-        '_id': payload["id"],
-        'plate': payload["plate"]
+        'plate': payload["plate"],
+        'timestamp': timestamp,
+        "camera": camera_id,
+        "url": f"{S3_DNS}/{id}.jpg"
     }
     plates.insert_one(plate)
 
 
-mqtt_client = mqtt.Client()
-mqtt_client.connect(os.getenv('MQTT_PORT'))
-mqtt_client.subscribe("text")
-mqtt_client.on_message = on_message
-print("Waiting for messages .....")
-mqtt_client.loop_forever()
+mq_host = os.getenv('RABBITMQ_HOST')
 
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host=mq_host))
+channel = connection.channel()
+
+channel.queue_declare(queue='plate')
+channel.basic_consume(queue='plate', on_message_callback=callback, auto_ack=True)
+
+print(' [*] Waiting for messages. To exit press CTRL+C')
+channel.start_consuming()
